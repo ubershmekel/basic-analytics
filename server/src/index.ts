@@ -1,6 +1,6 @@
-import { Prisma, PrismaClient } from '@prisma/client';
+import { Event, Prisma, PrismaClient } from '@prisma/client';
 import express from 'express';
-import { EventData, EventReturn } from '../../client/src/web-api';
+import { EventReturn } from '../../client/src/web-api';
 
 const prisma = new PrismaClient();
 const app = express();
@@ -23,7 +23,7 @@ app.get(`/`, async (req, res) => {
 });
 
 app.post(`/event`, async (req, res) => {
-  const userEvent = req.body as EventData;
+  const userEvent = req.body as Event;
   console.log("userEvent", userEvent);
 
   if (!userEvent.sessionId || !userEvent.domain || !userEvent.key) {
@@ -38,6 +38,10 @@ app.post(`/event`, async (req, res) => {
       key: userEvent.key,
       ip: req.ip,
       userAgent: req.headers['user-agent'] || '',
+      iv: userEvent.iv,
+      fv: userEvent.fv,
+      jv: userEvent.jv,
+      sv: userEvent.sv,
     },
   });
 
