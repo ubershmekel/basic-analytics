@@ -4,7 +4,7 @@
     "outDir": "dist",
     "sourceMap": true,
     "target": "es5",
-    "module": "commonjs",
+    "module": "es2015",
     "declaration": true,
     "strict": true,
 
@@ -14,7 +14,6 @@
 
     "noUnusedLocals": true,
     "experimentalDecorators": true,
-    "resolveJsonModule": true,
     "esModuleInterop": true,
     "removeComments": false,
     "jsx": "preserve",

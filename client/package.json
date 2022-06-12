@@ -1,15 +1,23 @@
 {
   "name": "@basic-analytics/sdk",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "dist/sdk.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "prepublish": "tsc",
+    "publish": "npm publish --access public",
+    "serve": "cd dist && http-server --cors --port 8081"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^17.0.39",
+    "http-server": "^14.1.1",
     "typescript": "^4.7.3"
-  }
+  },
+  "files": [
+    "dist/**/*"
+  ]
 }
