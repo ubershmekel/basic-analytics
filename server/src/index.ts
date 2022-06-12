@@ -1,6 +1,6 @@
 import { Event, Prisma, PrismaClient } from "@prisma/client";
 import express from "express";
-import { EventReturn } from "../../client/src/web-api";
+import { EventReturn } from "../../client/src/sdk";
 
 const prisma = new PrismaClient();
 const app = express();
