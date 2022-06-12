@@ -12,7 +12,19 @@ export interface EventReturn {
 }
 export interface InitData {
     apiBase: string;
-    sessionId: string;
+    sessionId?: string;
 }
-export declare function init(data: InitData): void;
-export declare function sendEvent(data: EventData): Promise<EventReturn>;
+declare class BAEndpoint {
+    sidKey: string;
+    apiData: InitData;
+    constructor(apiData: InitData);
+    setupSessionId(): void;
+    sendEvent(data: EventData): Promise<EventReturn>;
+}
+export default class BasicAnalytics {
+    static endPoint: BAEndpoint | null;
+    static init(data: InitData): void;
+    static sendEvent(data: EventData): Promise<EventReturn>;
+    static windowInit(): void;
+}
+export {};

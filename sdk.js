@@ -1,4 +1,3 @@
-"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -35,60 +34,116 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendEvent = exports.init = void 0;
-var apiData = null;
-function init(data) {
-    apiData = data;
-}
-exports.init = init;
-var sidKey = "tsauid";
-var sessionId = localStorage.getItem(sidKey);
-if (!sessionId) {
-    sessionId = Math.random().toString(16).slice(2);
-    localStorage.setItem(sidKey, sessionId);
-}
-function sendEvent(data) {
-    return __awaiter(this, void 0, void 0, function () {
-        var msg, url, response, result;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    if (!apiData) {
-                        msg = "Events are not being sent. Did you call tasanlytics `init` with valid data?";
-                        console.error(msg);
-                        return [2 /*return*/, {
-                                error: msg,
-                            }];
-                    }
-                    if (!data.sessionId) {
-                        data.sessionId = apiData.sessionId;
-                    }
-                    if (!data.domain) {
-                        data.domain = window.location.hostname;
-                    }
-                    if (data.key === "pageview" && !data.sv) {
-                        data.sv = window.location.href;
-                    }
-                    url = apiData.apiBase + "/event";
-                    return [4 /*yield*/, fetch(url, {
-                            method: "POST",
-                            headers: {
-                                Accept: "application/json, text/plain, */*",
-                                "Content-Type": "application/json",
-                            },
-                            body: JSON.stringify(data),
-                        })];
-                case 1:
-                    response = _a.sent();
-                    return [4 /*yield*/, response.json()];
-                case 2:
-                    result = _a.sent();
-                    return [2 /*return*/, result];
-            }
+var BAEndpoint = /** @class */ (function () {
+    function BAEndpoint(apiData) {
+        this.sidKey = "tsauid";
+        this.apiData = apiData;
+    }
+    BAEndpoint.prototype.setupSessionId = function () {
+        if (this.apiData.sessionId) {
+            return;
+        }
+        var sessionId = localStorage.getItem(this.sidKey);
+        if (!sessionId) {
+            sessionId = Math.random().toString(16).slice(2);
+            localStorage.setItem(this.sidKey, sessionId);
+        }
+        this.apiData.sessionId = sessionId;
+    };
+    BAEndpoint.prototype.sendEvent = function (data) {
+        var _a;
+        return __awaiter(this, void 0, void 0, function () {
+            var msg, url, response, result;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        if (!((_a = this.apiData) === null || _a === void 0 ? void 0 : _a.apiBase)) {
+                            msg = "Events are not being sent. Did you create a `BAEndpoint` with valid data?";
+                            console.error(msg);
+                            return [2 /*return*/, {
+                                    error: msg,
+                                }];
+                        }
+                        if (!data.sessionId) {
+                            data.sessionId = this.apiData.sessionId;
+                        }
+                        if (!data.domain) {
+                            data.domain = window.location.hostname;
+                        }
+                        if (data.key === "pageview" && !data.sv) {
+                            data.sv = window.location.href;
+                        }
+                        url = this.apiData.apiBase + "/event";
+                        return [4 /*yield*/, fetch(url, {
+                                method: "POST",
+                                headers: {
+                                    Accept: "application/json, text/plain, */*",
+                                    "Content-Type": "application/json",
+                                },
+                                body: JSON.stringify(data),
+                            })];
+                    case 1:
+                        response = _b.sent();
+                        return [4 /*yield*/, response.json()];
+                    case 2:
+                        result = _b.sent();
+                        return [2 /*return*/, result];
+                }
+            });
         });
-    });
-}
-exports.sendEvent = sendEvent;
-sendEvent({ key: "pageview" });
+    };
+    return BAEndpoint;
+}());
+var BasicAnalytics = /** @class */ (function () {
+    function BasicAnalytics() {
+    }
+    BasicAnalytics.init = function (data) {
+        this.endPoint = new BAEndpoint(data);
+        if (!this.endPoint.apiData.sessionId) {
+            this.endPoint.setupSessionId();
+        }
+    };
+    BasicAnalytics.sendEvent = function (data) {
+        var _a, _b;
+        return __awaiter(this, void 0, void 0, function () {
+            var msg;
+            return __generator(this, function (_c) {
+                if (!((_b = (_a = this.endPoint) === null || _a === void 0 ? void 0 : _a.apiData) === null || _b === void 0 ? void 0 : _b.apiBase)) {
+                    msg = "Events are not being sent. Did you call tasanlytics `init` with valid data?";
+                    console.error(msg);
+                    return [2 /*return*/, {
+                            error: msg,
+                        }];
+                }
+                return [2 /*return*/, this.endPoint.sendEvent(data)];
+            });
+        });
+    };
+    BasicAnalytics.windowInit = function () {
+        var _this = this;
+        var windowData = window.basicAnalyticsData;
+        if (!windowData || !windowData.apiBase) {
+            return;
+        }
+        // rate limiting event sending
+        var msPerSendEvent = 100;
+        this.init({
+            apiBase: windowData.apiBase,
+        });
+        setInterval(function () {
+            var _a;
+            if (windowData.buffer.length === 0) {
+                return;
+            }
+            var nextEvent = windowData.buffer.shift();
+            (_a = _this.endPoint) === null || _a === void 0 ? void 0 : _a.sendEvent(nextEvent);
+        }, msPerSendEvent);
+    };
+    // A class that helps us have a global analytics instance
+    // for convenience.
+    BasicAnalytics.endPoint = null;
+    return BasicAnalytics;
+}());
+export default BasicAnalytics;
+BasicAnalytics.windowInit();
 //# sourceMappingURL=sdk.js.map
