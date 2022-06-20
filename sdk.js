@@ -98,6 +98,9 @@ var BasicAnalytics = /** @class */ (function () {
     function BasicAnalytics() {
     }
     BasicAnalytics.init = function (data) {
+        if (this.constructor == BasicAnalytics.init) {
+            throw new Error("Don't init Basic Analytics with a `new`. Just call `init()`.");
+        }
         this.endPoint = new BAEndpoint(data);
         if (!this.endPoint.apiData.sessionId) {
             this.endPoint.setupSessionId();
@@ -108,14 +111,14 @@ var BasicAnalytics = /** @class */ (function () {
         return __awaiter(this, void 0, void 0, function () {
             var msg;
             return __generator(this, function (_c) {
-                if (!((_b = (_a = this.endPoint) === null || _a === void 0 ? void 0 : _a.apiData) === null || _b === void 0 ? void 0 : _b.apiBase)) {
+                if (!((_b = (_a = BasicAnalytics.endPoint) === null || _a === void 0 ? void 0 : _a.apiData) === null || _b === void 0 ? void 0 : _b.apiBase)) {
                     msg = "Events are not being sent. Did you call tasanlytics `init` with valid data?";
-                    console.error(msg);
+                    console.error(msg, BasicAnalytics.endPoint);
                     return [2 /*return*/, {
                             error: msg,
                         }];
                 }
-                return [2 /*return*/, this.endPoint.sendEvent(data)];
+                return [2 /*return*/, BasicAnalytics.endPoint.sendEvent(data)];
             });
         });
     };
@@ -127,7 +130,7 @@ var BasicAnalytics = /** @class */ (function () {
         }
         // rate limiting event sending
         var msPerSendEvent = 100;
-        this.init({
+        BasicAnalytics.init({
             apiBase: windowData.apiBase,
         });
         setInterval(function () {
