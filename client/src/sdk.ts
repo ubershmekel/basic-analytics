@@ -80,6 +80,12 @@ export default class BasicAnalytics {
   static endPoint: BAEndpoint | null = null;
 
   static init(data: InitData) {
+    if (this.constructor == BasicAnalytics.init) {
+      throw new Error(
+        "Don't init Basic Analytics with a `new`. Just call `init()`."
+      );
+    }
+
     this.endPoint = new BAEndpoint(data);
     if (!this.endPoint.apiData.sessionId) {
       this.endPoint.setupSessionId();
@@ -87,15 +93,15 @@ export default class BasicAnalytics {
   }
 
   static async sendEvent(data: EventData): Promise<EventReturn> {
-    if (!this.endPoint?.apiData?.apiBase) {
+    if (!BasicAnalytics.endPoint?.apiData?.apiBase) {
       const msg =
         "Events are not being sent. Did you call tasanlytics `init` with valid data?";
-      console.error(msg);
+      console.error(msg, BasicAnalytics.endPoint);
       return {
         error: msg,
       };
     }
-    return this.endPoint.sendEvent(data);
+    return BasicAnalytics.endPoint.sendEvent(data);
   }
 
   static windowInit() {
@@ -105,7 +111,7 @@ export default class BasicAnalytics {
     }
     // rate limiting event sending
     const msPerSendEvent = 100;
-    this.init({
+    BasicAnalytics.init({
       apiBase: windowData.apiBase,
     });
     setInterval(() => {
